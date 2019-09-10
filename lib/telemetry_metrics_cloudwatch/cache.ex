@@ -76,11 +76,17 @@ defmodule TelemetryMetricsCloudwatch.Cache do
 
   def metric_count(%Cache{counters: counters, last_values: last_values, summaries: summaries}) do
     [counters, last_values, summaries]
-    |> Enum.map(&length/1)
+    |> Enum.map(&map_size/1)
     |> Enum.reduce(0, &(&1 + &2))
   end
 
+  # If summaries are empty, then the max values for last value or count metrics would
+  # just be 1 if there are any keys with values otherwise 0
+  def max_values_per_metric(%Cache{summaries: summaries} = cache) when map_size(summaries) == 0,
+    do: min(metric_count(cache), 1)
+
   def max_values_per_metric(%Cache{summaries: summaries}) do
+    # Summaries are the only ones that could have more than one
     Enum.reduce(Map.values(summaries), 0, fn measurements, bigsofar ->
       max(bigsofar, length(measurements))
     end)
