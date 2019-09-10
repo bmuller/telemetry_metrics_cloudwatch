@@ -57,7 +57,7 @@ defmodule TelemetryMetricsCloudwatch do
   option) or when the data cache has reached the maximum size that CloudFront will accept.
 
   ## Units
-  
+
   In order to report metrics in the CloudWatch UI, they must be one of the following values:
 
     * Time units: `:second`, `:microsecond`, `:millisecond`
