@@ -1,10 +1,13 @@
 defmodule TelemetryMetricsCloudwatch.Cache do
-  defstruct counters: %{},
-            last_values: %{},
-            summaries: %{},
-            metric_names: [],
-            namespace: nil,
-            last_run: nil
+  defstruct [
+    :metric_names,
+    :namespace,
+    :last_run,
+    :push_interval,
+    counters: %{},
+    last_values: %{},
+    summaries: %{}
+  ]
 
   require Logger
 
