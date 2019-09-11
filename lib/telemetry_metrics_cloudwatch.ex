@@ -71,11 +71,13 @@ defmodule TelemetryMetricsCloudwatch do
   [`ExAws`](https://hexdocs.pm/ex_aws/ExAws.html) is the library used to send metrics to CloudWatch.  Make sure your
   [keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the 
   [correct permissions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/permissions-reference-cw.html) of `cloudwatch:PutMetricData`.
+
+  Up to 10 tags are sent up to AWS as dimensions for a given metric.
   """
 
   use GenServer
   require Logger
-  alias TelemetryMetricsCloudwatch.Cache
+  alias TelemetryMetricsCloudwatch.{Cache, Cloudwatch}
 
   @doc """
   Start the `TelemetryMetricsCloudwatch` `GenServer`.
@@ -172,29 +174,7 @@ defmodule TelemetryMetricsCloudwatch do
 
   defp push(%Cache{namespace: namespace} = state) do
     {state, metric_data} = Cache.pop_metrics(state)
-
-    # gzip, since we've got a max 40 KB payload
-    request =
-      metric_data
-      |> ExAws.Cloudwatch.put_metric_data(namespace)
-      |> Map.put(:content_encoding, "gzip")
-
-    metric_count = length(metric_data)
-
-    request
-    |> ExAws.request()
-    |> case do
-      {:ok, _resp} ->
-        Logger.debug(
-          "#{__MODULE__} pushed #{metric_count} metrics to cloudwatch in namespace #{namespace}"
-        )
-
-      {:error, resp} ->
-        Logger.error(
-          "#{__MODULE__} could not push #{metric_count} metrics to cloudwatch: #{inspect(resp)}"
-        )
-    end
-
+    Cloudwatch.send_metrics(metric_data, namespace)
     Map.put(state, :last_run, System.monotonic_time(:second))
   end
 

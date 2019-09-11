@@ -94,6 +94,8 @@ For `Telementry.Metrics.Counter`s, the unit will always be `:count`.  Otherwise,
 [keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the
 [correct permissions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/permissions-reference-cw.html) of `cloudwatch:PutMetricData`.
 
+Up to 10 tags are sent up to AWS as dimensions for a given metric.
+
 ## Running Tests
 
 To run tests:

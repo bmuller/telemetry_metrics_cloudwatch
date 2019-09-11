@@ -1,4 +1,9 @@
 defmodule TelemetryMetricsCloudwatch.Cache do
+  @moduledoc """
+  State for `GenServer`.  Nothing here should be called directly outside of the
+  `TelemetryMetricsCloudwatch` module.
+  """
+
   defstruct [
     :metric_names,
     :namespace,
@@ -102,9 +107,13 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     end
   end
 
+  # extract up to 10 tags
   defp extract_tags(metric, metadata) do
-    tag_values = metric.tag_values.(metadata)
-    Map.take(tag_values, metric.tags)
+    metadata
+    |> metric.tag_values.()
+    |> Map.take(metric.tags)
+    |> Enum.into([], fn {k, v} -> {k, to_string(v)} end)
+    |> Enum.take(10)
   end
 
   def validate_metrics([]), do: nil
@@ -116,9 +125,8 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     validate_metrics(rest)
   end
 
-  def pop_metrics(cache) do
-    Enum.reduce(~w(summaries counters last_values)a, {cache, []}, &pop/2)
-  end
+  def pop_metrics(cache),
+    do: Enum.reduce(~w(summaries counters last_values)a, {cache, []}, &pop/2)
 
   defp pop(:summaries, {cache, items}) do
     nitems =
@@ -128,7 +136,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         [
           metric_name: extract_string_name(metric),
           values: measurements,
-          dimensions: Enum.into(tags, []),
+          dimensions: tags,
           unit: get_unit(metric.unit)
         ]
       end)
@@ -144,7 +152,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         [
           metric_name: extract_string_name(metric),
           value: measurement,
-          dimensions: Enum.into(tags, []),
+          dimensions: tags,
           unit: "Count"
         ]
       end)
@@ -160,7 +168,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         [
           metric_name: extract_string_name(metric),
           value: measurement,
-          dimensions: Enum.into(tags, []),
+          dimensions: tags,
           unit: get_unit(metric.unit)
         ]
       end)
@@ -170,12 +178,10 @@ defmodule TelemetryMetricsCloudwatch.Cache do
 
   defp get_unit(input) do
     if Enum.member?(@valid_units, input) do
-      prefix =
-        input
-        |> to_string()
-        |> String.capitalize()
-
-      prefix <> "s"
+      input
+      |> to_string()
+      |> String.capitalize()
+      |> Kernel.<>("s")
     else
       "None"
     end

@@ -12,6 +12,61 @@ defmodule TelemetryMetricsCloudwatchTest do
     end
   end
 
+  describe "When handling tags a cache" do
+    test "should be able to handle tags with non string values" do
+      tvalues = %{host: 'a host', port: 123}
+
+      counter =
+        Metrics.counter([:aname, :value],
+          tag_values: &Map.merge(&1, tvalues),
+          tags: [:host, :port]
+        )
+
+      cache = Cache.push_measurement(%Cache{}, %{value: 112}, %{}, counter)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      {_postcache, metrics} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               [
+                 metric_name: "aname.value",
+                 value: 1,
+                 dimensions: [host: "a host", port: "123"],
+                 unit: "Count"
+               ]
+             ]
+    end
+
+    test "should be able to handle more than 10 tags" do
+      keys = ~w(a b c d e f g h i j k l m n o p)a
+      tvalues = Enum.into(keys, %{}, &{&1, "value"})
+
+      counter =
+        Metrics.counter([:aname, :value],
+          tag_values: &Map.merge(&1, tvalues),
+          tags: keys
+        )
+
+      cache = Cache.push_measurement(%Cache{}, %{value: 112}, %{}, counter)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      {_postcache, metrics} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               [
+                 metric_name: "aname.value",
+                 value: 1,
+                 dimensions: Enum.take(tvalues, 10),
+                 unit: "Count"
+               ]
+             ]
+    end
+  end
+
   describe "When handling counts, a cache" do
     test "should be able to coalesce a single count metric" do
       cache =
