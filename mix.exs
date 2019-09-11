@@ -15,7 +15,7 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
       package: package(),
       source_url: "https://github.com/bmuller/telemetry_metrics_cloudwatch",
       docs: [
-        source_ref: "v{@version}",
+        source_ref: "v#{@version}",
         main: "TelemetryMetricsCloudwatch",
         formatters: ~w(html epub)
       ]
