@@ -11,20 +11,22 @@ defmodule TelemetryMetricsCloudwatch.Cloudwatch do
     |> ExAws.Cloudwatch.put_metric_data(namespace)
     |> Map.put(:content_encoding, "gzip")
     |> ExAws.request()
-    |> log_result(length(metric_data), namespace)
+    |> log_result(metric_data, namespace)
   end
 
-  defp log_result({:ok, _resp}, count, namespace),
+  defp log_result({:ok, _resp}, metric_data, namespace),
     do:
       Logger.debug(
-        "#{__MODULE__} pushed #{count} metrics to cloudwatch in namespace #{namespace}"
+        "#{__MODULE__} pushed #{length(metric_data)} metrics to cloudwatch in namespace #{
+          namespace
+        }"
       )
 
-  defp log_result({:error, resp}, count, namespace),
+  defp log_result({:error, resp}, metric_data, namespace),
     do:
       Logger.error(
-        "#{__MODULE__} failed to push #{count} metrics to cloudwatch in namespace #{namespace}: #{
-          inspect(resp)
-        }"
+        "#{__MODULE__} failed to push metrics #{inspect(metric_data)} to cloudwatch in namespace #{
+          namespace
+        }: #{inspect(resp)}"
       )
 end
