@@ -107,12 +107,14 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     end
   end
 
-  # extract up to 10 tags
+  # extract up to 10 tags, and don't include any empty values
+  # because cloudwatch won't handle any empty dimensions
   defp extract_tags(metric, metadata) do
     metadata
     |> metric.tag_values.()
     |> Map.take(metric.tags)
     |> Enum.into([], fn {k, v} -> {k, to_string(v)} end)
+    |> Enum.filter(fn {_k, v} -> String.length(v) > 0 end)
     |> Enum.take(10)
   end
 

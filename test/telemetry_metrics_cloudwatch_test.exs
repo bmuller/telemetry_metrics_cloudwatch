@@ -13,6 +13,32 @@ defmodule TelemetryMetricsCloudwatchTest do
   end
 
   describe "When handling tags a cache" do
+    test "should be able to handle tags with empty/nil values" do
+      tvalues = %{host: 'a host', port: 123, something: "", somethingelse: nil}
+
+      counter =
+        Metrics.counter([:aname, :value],
+          tag_values: &Map.merge(&1, tvalues),
+          tags: [:host, :port, :something, :somethingelse]
+        )
+
+      cache = Cache.push_measurement(%Cache{}, %{value: 112}, %{}, counter)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      {_postcache, metrics} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               [
+                 metric_name: "aname.value",
+                 value: 1,
+                 dimensions: [host: "a host", port: "123"],
+                 unit: "Count"
+               ]
+             ]
+    end
+
     test "should be able to handle tags with non string values" do
       tvalues = %{host: 'a host', port: 123}
 
