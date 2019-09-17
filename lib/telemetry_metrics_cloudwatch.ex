@@ -17,7 +17,7 @@ defmodule TelemetryMetricsCloudwatch do
         Supervisor.start_link(children, opts)
       end
 
-      defp metrics, do:
+      defp metrics do
         [
           counter("http.request.count"),
           last_value("vm.memory.total", unit: :byte),
