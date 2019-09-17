@@ -12,7 +12,7 @@ To install `telemetry_metrics_cloudwatch`, just add an entry to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:telemetry_metrics_cloudwatch, "~> 0.1"}
+    {:telemetry_metrics_cloudwatch, "~> 0.2"}
   ]
 end
 ```
@@ -36,7 +36,7 @@ run TelemetryMetricsCloudwatch under a supervision tree, usually under Applicati
     Supervisor.start_link(children, opts)
   end
 
-  defp metrics, do:
+  defp metrics do
     [
       counter("http.request.count"),
       last_value("vm.memory.total", unit: :byte),
