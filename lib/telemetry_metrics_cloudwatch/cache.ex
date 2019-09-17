@@ -136,7 +136,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       |> Map.get(:summaries)
       |> Enum.map(fn {{metric, tags}, measurements} ->
         [
-          metric_name: extract_string_name(metric),
+          metric_name: extract_string_name(metric) <> ".summary",
           values: measurements,
           dimensions: tags,
           unit: get_unit(metric.unit)
@@ -152,7 +152,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       |> Map.get(:counters)
       |> Enum.map(fn {{metric, tags}, measurement} ->
         [
-          metric_name: extract_string_name(metric),
+          metric_name: extract_string_name(metric) <> ".count",
           value: measurement,
           dimensions: tags,
           unit: "Count"
@@ -168,7 +168,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       |> Map.get(:last_values)
       |> Enum.map(fn {{metric, tags}, measurement} ->
         [
-          metric_name: extract_string_name(metric),
+          metric_name: extract_string_name(metric) <> ".last_value",
           value: measurement,
           dimensions: tags,
           unit: get_unit(metric.unit)

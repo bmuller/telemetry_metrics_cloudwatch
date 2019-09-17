@@ -66,13 +66,24 @@ defmodule TelemetryMetricsCloudwatch do
 
   For `Telementry.Metrics.Counter`s, the unit will always be `:count`.  Otherwise, the unit will be treated as `nil`.
 
-  ## ExAws Setup
+  ## Notes on AWS
 
   [`ExAws`](https://hexdocs.pm/ex_aws/ExAws.html) is the library used to send metrics to CloudWatch.  Make sure your
   [keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the 
   [correct permissions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/permissions-reference-cw.html) of `cloudwatch:PutMetricData`.
 
-  Up to 10 tags are sent up to AWS as dimensions for a given metric.
+  Up to 10 tags are sent up to AWS as dimensions for a given metric.  Every metric name will have a suffix added based on
+  the metric type (CloudWatch doesn't allow different units / measurements with the same name).  So, for instance,
+  if your metrics are:
+
+      summary("my_app.repo.query.total_time", unit: {:nanosecond, :millisecond})
+      count("my_app.repo.query.total_time")
+
+  Then the metric names in CloudWatch will be:
+
+    * `my_app.repo.query.total_time.summary` (with all data points recorded)
+    * `my_app.repo.query.total_time.count` (with the number of queries recorded)
+
   """
 
   use GenServer
