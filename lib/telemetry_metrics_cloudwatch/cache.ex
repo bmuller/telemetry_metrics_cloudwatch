@@ -30,7 +30,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
 
     if is_number(measurement) do
       Logger.debug(
-        "#{extract_string_name(metric)}[#{metric.__struct__}] recieved with value #{measurement} and tags #{
+        "#{extract_string_name(metric)}[#{metric.__struct__}] received with value #{measurement} and tags #{
           inspect(tags)
         }"
       )
