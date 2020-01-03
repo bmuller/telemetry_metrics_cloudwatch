@@ -76,7 +76,7 @@ These metrics are sent to CloudWatch based on the rules described below.
 Cloudwatch has [certain constraints](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
 on the number of metrics that can be sent up at any given time.  `TelemetryMetricsCloudwatch`
 will send accumulated metric data at least every minute (configurable by the `:push_interval`
-option) or when the data cache has reached the maximum size that CloudFront will accept.
+option) or when the data cache has reached the maximum size that CloudWatch will accept.
 
 ### Units
   

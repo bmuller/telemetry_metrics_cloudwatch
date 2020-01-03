@@ -1,7 +1,7 @@
 defmodule TelemetryMetricsCloudwatch.MixProject do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.2.1"
 
   def project do
     [
@@ -11,7 +11,7 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      description: "Provides an AWS CloudFront reporter for Telemetry.Metrics definitions.",
+      description: "Provides an AWS CloudWatch reporter for Telemetry Metrics definitions.",
       package: package(),
       source_url: "https://github.com/bmuller/telemetry_metrics_cloudwatch",
       docs: [
