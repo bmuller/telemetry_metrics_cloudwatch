@@ -28,20 +28,25 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     measurement = extract_measurement(metric, measurements)
     tags = extract_tags(metric, metadata)
 
-    if is_number(measurement) do
-      Logger.debug(
-        "#{extract_string_name(metric)}[#{metric.__struct__}] received with value #{measurement} and tags #{
-          inspect(tags)
-        }"
-      )
+    cond do
+      is_nil(measurement) ->
+        Logger.debug("Ignoring nil value for #{inspect(metric)}")
+        cache
 
-      coalesce(cache, metric, measurement, tags)
-    else
-      Logger.warn(
-        "Value for #{inspect(metric)} was non-numeric: #{inspect(measurement)}.  Ignoring."
-      )
+      is_number(measurement) ->
+        sname = extract_string_name(metric)
 
-      cache
+        Logger.debug(
+          "#{sname}[#{metric.__struct__}] received with value #{measurement} and tags #{
+            inspect(tags)
+          }"
+        )
+
+        coalesce(cache, metric, measurement, tags)
+
+      true ->
+        Logger.warn("Ignoring non-numeric value for #{inspect(metric)}: #{inspect(measurement)}")
+        cache
     end
   rescue
     e ->

@@ -1,8 +1,8 @@
 defmodule TelemetryMetricsCloudwatchTest do
   use ExUnit.Case
 
-  alias TelemetryMetricsCloudwatch.{Cache}
-  alias Telemetry.{Metrics}
+  alias Telemetry.Metrics
+  alias TelemetryMetricsCloudwatch.Cache
 
   describe "An empty cache" do
     test "should have the right metric count and max values per metric" do
@@ -114,9 +114,62 @@ defmodule TelemetryMetricsCloudwatchTest do
 
     test "should be able to coalesce multiple count metrics" do
       cache =
-        Cache.push_measurement(%Cache{}, %{value: 133}, %{}, Metrics.counter([:aname, :value]))
+        %Cache{}
+        |> Cache.push_measurement(%{value: 133}, %{}, Metrics.counter([:aname, :value]))
+        |> Cache.push_measurement(%{value: 100}, %{}, Metrics.counter([:aname, :value]))
 
-      cache = Cache.push_measurement(cache, %{value: 100}, %{}, Metrics.counter([:aname, :value]))
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      # now pop all metrics
+      {postcache, metrics} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               [metric_name: "aname.value.count", value: 2, dimensions: [], unit: "Count"]
+             ]
+
+      assert Cache.metric_count(postcache) == 0
+      assert Cache.max_values_per_metric(postcache) == 0
+    end
+
+    test "should be able to handle a nil value" do
+      cache =
+        Cache.push_measurement(%Cache{}, %{value: nil}, %{}, Metrics.counter([:aname, :value]))
+
+      assert Cache.metric_count(cache) == 0
+
+      cache =
+        %Cache{}
+        |> Cache.push_measurement(%{value: 133}, %{}, Metrics.counter([:aname, :value]))
+        |> Cache.push_measurement(%{value: nil}, %{}, Metrics.counter([:aname, :value]))
+        |> Cache.push_measurement(%{value: 100}, %{}, Metrics.counter([:aname, :value]))
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      # now pop all metrics
+      {postcache, metrics} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               [metric_name: "aname.value.count", value: 2, dimensions: [], unit: "Count"]
+             ]
+
+      assert Cache.metric_count(postcache) == 0
+      assert Cache.max_values_per_metric(postcache) == 0
+    end
+
+    test "should be able to handle a non-numeric, non-nil value" do
+      cache =
+        Cache.push_measurement(%Cache{}, %{value: "hi"}, %{}, Metrics.counter([:aname, :value]))
+
+      assert Cache.metric_count(cache) == 0
+
+      cache =
+        %Cache{}
+        |> Cache.push_measurement(%{value: 133}, %{}, Metrics.counter([:aname, :value]))
+        |> Cache.push_measurement(%{value: "hi"}, %{}, Metrics.counter([:aname, :value]))
+        |> Cache.push_measurement(%{value: 100}, %{}, Metrics.counter([:aname, :value]))
+
       assert Cache.metric_count(cache) == 1
       assert Cache.max_values_per_metric(cache) == 1
 
