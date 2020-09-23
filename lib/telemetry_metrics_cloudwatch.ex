@@ -162,14 +162,15 @@ defmodule TelemetryMetricsCloudwatch do
     Process.send_after(self(), :push_check, push_interval)
   end
 
-  defp push_check(%Cache{last_run: last_run} = state) do
+  defp push_check(%Cache{last_run: last_run, push_interval: push_interval} = state) do
     # https://docs.aws.amazon.com/cli/latest/reference/cloudwatch/put-metric-data.html
     # We can publish up to 150 values per metric for up to 20 different metrics
     metric_count = Cache.metric_count(state)
     metric_age = System.monotonic_time(:second) - last_run
+    push_interval = push_interval / 1000
 
     cond do
-      metric_age >= 60 and metric_count > 0 ->
+      metric_age >= push_interval and metric_count > 0 ->
         push(state)
 
       metric_count == 20 ->
