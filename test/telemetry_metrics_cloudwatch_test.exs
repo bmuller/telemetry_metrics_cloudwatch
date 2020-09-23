@@ -132,6 +132,28 @@ defmodule TelemetryMetricsCloudwatchTest do
       assert Cache.max_values_per_metric(postcache) == 0
     end
 
+    test "should be able to coalesce multiple sum metrics" do
+      sum_metric = Metrics.sum([:aname, :value])
+
+      cache =
+        %Cache{}
+        |> Cache.push_measurement(%{value: 133}, %{}, sum_metric)
+        |> Cache.push_measurement(%{value: 100}, %{}, sum_metric)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      # now pop all metrics
+      {postcache, metrics} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               [metric_name: "aname.value.sum", value: 233, dimensions: [], unit: "None"]
+             ]
+
+      assert Cache.metric_count(postcache) == 0
+      assert Cache.max_values_per_metric(postcache) == 0
+    end
+
     test "should be able to handle a nil value" do
       cache =
         Cache.push_measurement(%Cache{}, %{value: nil}, %{}, Metrics.counter([:aname, :value]))
