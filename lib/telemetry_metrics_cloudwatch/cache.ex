@@ -10,19 +10,22 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     :last_run,
     :push_interval,
     counters: %{},
+    sums: %{},
     last_values: %{},
     summaries: %{}
   ]
 
   require Logger
 
-  alias Telemetry.Metrics.{Counter, LastValue, Summary}
+  alias Telemetry.Metrics.{Counter, LastValue, Sum, Summary}
   alias __MODULE__
 
   # the only valid units are: Seconds, Microseconds, Milliseconds, Bytes, Kilobytes,
   # Megabytes, Gigabytes, Terabytes, Bits, Kilobits, Megabits, Gigabits, Terabits
   @valid_units ~w(second microsecond millisecond byte kilobyte megabyte gigabyte
     terabyte bit kilobit megabit gigabit terabit)a
+
+  @metric_names ~w[summaries counters last_values sums]a
 
   def push_measurement(cache, measurements, metadata, metric) do
     measurement = extract_measurement(metric, measurements)
@@ -66,6 +69,11 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     Map.put(cache, :counters, counters)
   end
 
+  defp coalesce(%Cache{sums: sums} = cache, %Sum{} = metric, measurement, tags) do
+    sums = Map.update(sums, {metric, tags}, measurement, &(&1 + measurement))
+    Map.put(cache, :sums, sums)
+  end
+
   defp coalesce(
          %Cache{last_values: last_values} = cache,
          %LastValue{} = metric,
@@ -84,10 +92,12 @@ defmodule TelemetryMetricsCloudwatch.Cache do
   # no idea how to handle this metric
   defp coalesce(cache, _metric, _measurement, _tags), do: cache
 
-  def metric_count(%Cache{counters: counters, last_values: last_values, summaries: summaries}) do
-    [counters, last_values, summaries]
+  def metric_count(%Cache{} = cache) do
+    cache
+    |> Map.take(@metric_names)
+    |> Map.values()
     |> Enum.map(&map_size/1)
-    |> Enum.reduce(0, &(&1 + &2))
+    |> Enum.sum()
   end
 
   # If summaries are empty, then the max values for last value or count metrics would
@@ -126,14 +136,14 @@ defmodule TelemetryMetricsCloudwatch.Cache do
   def validate_metrics([]), do: nil
 
   def validate_metrics([head | rest]) do
-    unless Enum.member?([Counter, Summary, LastValue], head.__struct__),
+    unless Enum.member?([Counter, Summary, LastValue, Sum], head.__struct__),
       do: Logger.warn("#{head.__struct__} is not supported by the Reporter #{__MODULE__}")
 
     validate_metrics(rest)
   end
 
   def pop_metrics(cache),
-    do: Enum.reduce(~w(summaries counters last_values)a, {cache, []}, &pop/2)
+    do: Enum.reduce(@metric_names, {cache, []}, &pop/2)
 
   defp pop(:summaries, {cache, items}) do
     nitems =
@@ -165,6 +175,22 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       end)
 
     {Map.put(cache, :counters, %{}), items ++ nitems}
+  end
+
+  defp pop(:sums, {cache, items}) do
+    nitems =
+      cache
+      |> Map.get(:sums)
+      |> Enum.map(fn {{metric, tags}, measurement} ->
+        [
+          metric_name: extract_string_name(metric) <> ".sum",
+          value: measurement,
+          dimensions: tags,
+          unit: get_unit(metric.unit)
+        ]
+      end)
+
+    {Map.put(cache, :sums, %{}), items ++ nitems}
   end
 
   defp pop(:last_values, {cache, items}) do
