@@ -1,5 +1,11 @@
 # Changelog for v0.2.x
 
+## v0.2.3 (2020-09-22)
+
+### Bug Fixes
+
+ * Fixed issue where the `:push_interval` option was ignored when less than 60k milliseconds
+
 ## v0.2.2 (2020-05-08)
 
 ### Deprecations
