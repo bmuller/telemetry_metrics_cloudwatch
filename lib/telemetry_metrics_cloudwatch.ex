@@ -162,9 +162,8 @@ defmodule TelemetryMetricsCloudwatch do
   defp handle_telemetry_event(_event_name, measurements, metadata, {pid, metrics}),
     do: Kernel.send(pid, {:handle_event, measurements, metadata, metrics})
 
-  defp schedule_push_check(%Cache{push_interval: push_interval}) do
-    Process.send_after(self(), :push_check, push_interval)
-  end
+  defp schedule_push_check(%Cache{push_interval: push_interval}),
+    do: Process.send_after(self(), :push_check, push_interval)
 
   defp push_check(%Cache{last_run: last_run, push_interval: push_interval} = state) do
     # https://docs.aws.amazon.com/cli/latest/reference/cloudwatch/put-metric-data.html

@@ -1,3 +1,11 @@
+# Changelog for v0.3.x
+
+## v0.3.0 (2020-10-4)
+
+### Enhancements
+
+ * Support was added for the new `:keep` and `:drop` options in [Telemetry.Metrics 0.5.0](https://github.com/beam-telemetry/telemetry_metrics/blob/master/CHANGELOG.md#050)
+
 # Changelog for v0.2.x
 
 ## v0.2.4 (2020-10-04)

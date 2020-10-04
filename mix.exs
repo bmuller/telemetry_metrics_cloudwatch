@@ -1,7 +1,7 @@
 defmodule TelemetryMetricsCloudwatch.MixProject do
   use Mix.Project
 
-  @version "0.2.4"
+  @version "0.3.0"
 
   def project do
     [
@@ -56,9 +56,9 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
   defp deps do
     [
       {:ex_aws_cloudwatch, "~> 2.0"},
-      {:ex_doc, "~> 0.21", only: :dev},
+      {:ex_doc, "~> 0.22", only: :dev},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:telemetry_metrics, "~> 0.4"}
+      {:telemetry_metrics, "~> 0.5"}
     ]
   end
 end

@@ -25,7 +25,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
   @valid_units ~w(second microsecond millisecond byte kilobyte megabyte gigabyte
     terabyte bit kilobit megabit gigabit terabit)a
 
-  @metric_names ~w[summaries counters last_values sums]a
+  @metric_names ~w(summaries counters last_values sums)a
 
   def push_measurement(cache, measurements, metadata, metric) do
     measurement = extract_measurement(metric, measurements)
@@ -34,6 +34,10 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     cond do
       is_nil(measurement) ->
         Logger.debug("Ignoring nil value for #{inspect(metric)}")
+        cache
+
+      drop?(metric, metadata) ->
+        Logger.debug("Dropping value for #{inspect(metric)}")
         cache
 
       is_number(measurement) ->
@@ -121,6 +125,14 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       key -> measurements[key]
     end
   end
+
+  defp drop?(%{keep: func}, metadata) when is_function(func, 1),
+    do: not func.(metadata)
+
+  defp drop?(%{drop: func}, metadata) when is_function(func, 1),
+    do: func.(metadata)
+
+  defp drop?(_metric, _metadata), do: false
 
   # extract up to 10 tags, and don't include any empty values
   # because cloudwatch won't handle any empty dimensions
