@@ -1,5 +1,11 @@
 # Changelog for v0.2.x
 
+## v0.2.4 (2020-10-04)
+
+### Enhancements
+
+ * Support the `Sum` metric type
+
 ## v0.2.3 (2020-09-22)
 
 ### Bug Fixes

@@ -1,7 +1,7 @@
 defmodule TelemetryMetricsCloudwatch.MixProject do
   use Mix.Project
 
-  @version "0.2.3"
+  @version "0.2.4"
 
   def project do
     [
@@ -37,7 +37,11 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["Brian Muller"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/bmuller/telemetry_metrics_cloudwatch"}
+      links: %{
+        "GitHub" => "https://github.com/bmuller/telemetry_metrics_cloudwatch",
+        "Changelog" =>
+          "https://github.com/bmuller/telemetry_metrics_cloudwatch/blob/master/CHANGELOG.md"
+      }
     ]
   end
 

@@ -59,7 +59,7 @@ below for posting rules).  For instance:
 
 ### Telemetry.Metrics Types Supported
 
-`TelemetryMetricsCloudwatch` supports 3 of the [Metrics](https://hexdocs.pm/telemetry_metrics/Telemetry.Metrics.html#module-metrics):
+`TelemetryMetricsCloudwatch` supports 4 of the [Metrics](https://hexdocs.pm/telemetry_metrics/Telemetry.Metrics.html#module-metrics):
 
   * [Counter](https://hexdocs.pm/telemetry_metrics/Telemetry.Metrics.html#counter/2):
     Counter metric keeps track of the total number of specific events emitted.
@@ -67,7 +67,11 @@ below for posting rules).  For instance:
     Last value keeps track of the selected measurement found in the most recent event.
   * [Summary](https://hexdocs.pm/telemetry_metrics/Telemetry.Metrics.html#summary/2): Summary
     aggregates measurement's values into statistics, e.g. minimum and maximum, mean, or percentiles.
-    This sends every measurement to CloudWatch. 
+    This sends every measurement to CloudWatch.
+  * [Sum](https://hexdocs.pm/telemetry_metrics/Telemetry.Metrics.html#sum/2): Sum metric keeps track
+    of the sum of selected measurement's values carried by specific events.  If you are using Summary
+    for a metric already, then CloudWatch can calculate a Sum using that Summary metric.  If you
+    only need a Sum (and no other summary metrics) then use this Sum metric instead.
 
 These metrics are sent to CloudWatch based on the rules described below.
 
