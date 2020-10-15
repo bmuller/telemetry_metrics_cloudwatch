@@ -194,10 +194,10 @@ defmodule TelemetryMetricsCloudwatchTest do
     end
 
     test "should be able to handle a nil value" do
-      cache =
-        Cache.push_measurement(%Cache{}, %{value: nil}, %{}, Metrics.counter([:aname, :value]))
-
-      assert Cache.metric_count(cache) == 0
+      assert 0 ==
+               %Cache{}
+               |> Cache.push_measurement(%{value: nil}, %{}, Metrics.counter([:aname, :value]))
+               |> Cache.metric_count()
 
       cache =
         %Cache{}
@@ -224,10 +224,10 @@ defmodule TelemetryMetricsCloudwatchTest do
 
     @tag capture_log: true
     test "should be able to handle a non-numeric, non-nil value" do
-      cache =
-        Cache.push_measurement(%Cache{}, %{value: "hi"}, %{}, Metrics.counter([:aname, :value]))
-
-      assert Cache.metric_count(cache) == 0
+      assert 0 ==
+               %Cache{}
+               |> Cache.push_measurement(%{value: "hi"}, %{}, Metrics.counter([:aname, :value]))
+               |> Cache.metric_count()
 
       cache =
         %Cache{}

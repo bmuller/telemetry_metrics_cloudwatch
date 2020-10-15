@@ -59,7 +59,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     e ->
       Logger.error([
         "Could not process metric #{inspect(metric)}",
-        Exception.format(:error, e, System.stacktrace())
+        Exception.format(:error, e, __STACKTRACE__)
       ])
 
       cache

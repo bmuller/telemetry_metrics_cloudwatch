@@ -1,5 +1,11 @@
 # Changelog for v0.3.x
 
+## v0.3.1 (2020-10-15)
+
+### Bug Fixes
+
+ * Fixed `System.stacktrace()` deprecation warning
+
 ## v0.3.0 (2020-10-4)
 
 ### Enhancements
