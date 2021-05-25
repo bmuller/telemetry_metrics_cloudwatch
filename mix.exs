@@ -1,6 +1,7 @@
 defmodule TelemetryMetricsCloudwatch.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/bmuller/telemetry_metrics_cloudwatch"
   @version "0.3.1"
 
   def project do
@@ -13,18 +14,24 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
       deps: deps(),
       description: "Provides an AWS CloudWatch reporter for Telemetry Metrics definitions.",
       package: package(),
-      source_url: "https://github.com/bmuller/telemetry_metrics_cloudwatch",
-      docs: [
-        source_ref: "v#{@version}",
-        main: "TelemetryMetricsCloudwatch",
-        formatters: ~w(html epub)
-      ]
+      source_url: @source_url,
+      docs: docs(),
+      preferred_cli_env: [test: :test, "ci.test": :test]
+    ]
+  end
+
+  defp docs do
+    [
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      main: "TelemetryMetricsCloudwatch",
+      formatters: ~w(html)
     ]
   end
 
   defp aliases do
     [
-      test: [
+      "ci.test": [
         "format --check-formatted",
         "test",
         "credo"
@@ -38,9 +45,8 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
       maintainers: ["Brian Muller"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/bmuller/telemetry_metrics_cloudwatch",
-        "Changelog" =>
-          "https://github.com/bmuller/telemetry_metrics_cloudwatch/blob/master/CHANGELOG.md"
+        "GitHub" => @source_url,
+        "Changelog" => "#{@source_url}/blob/master/CHANGELOG.md"
       }
     ]
   end
@@ -56,9 +62,9 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
   defp deps do
     [
       {:ex_aws_cloudwatch, "~> 2.0"},
-      {:ex_doc, "~> 0.22", only: :dev},
-      {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:telemetry_metrics, "~> 0.5"}
+      {:ex_doc, "~> 0.24", only: :dev},
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:telemetry_metrics, "~> 0.6"}
     ]
   end
 end
