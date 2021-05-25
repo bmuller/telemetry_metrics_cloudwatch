@@ -43,12 +43,10 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       is_number(measurement) ->
         sname = extract_string_name(metric)
 
-        Logger.debug(
-          "#{sname}[#{metric.__struct__}] received with value #{measurement} and tags #{
-            inspect(tags)
-          }"
-        )
+        msg =
+          "#{sname}[#{metric.__struct__}] received with value #{measurement} and tags #{inspect(tags)}"
 
+        Logger.debug(msg)
         coalesce(cache, metric, measurement, tags)
 
       true ->
