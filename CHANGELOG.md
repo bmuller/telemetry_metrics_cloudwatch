@@ -1,5 +1,11 @@
 # Changelog for v0.3.x
 
+## v0.3.2 (2022-05-11)
+
+### Enhancements
+
+ * Made call to attached telemetry event function more performant (#5)
+
 ## v0.3.1 (2020-10-15)
 
 ### Bug Fixes
