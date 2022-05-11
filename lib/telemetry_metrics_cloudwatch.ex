@@ -1,6 +1,6 @@
 defmodule TelemetryMetricsCloudwatch do
   @moduledoc """
-  This is a [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) Reporter for 
+  This is a [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/) Reporter for
   [`Telemetry.Metrics`](https://github.com/beam-telemetry/telemetry_metrics) definitions.
 
   Provide a list of metric definitions to the `init/2` function. It's recommended to
@@ -26,7 +26,7 @@ defmodule TelemetryMetricsCloudwatch do
       end
 
   You can also provide options for the namespace used in CloudWatch (by default, "Telemetry")
-  and the minimum frequency (in milliseconds) with which data will be posted (see section 
+  and the minimum frequency (in milliseconds) with which data will be posted (see section
   below for posting rules).  For instance:
 
       ...
@@ -73,7 +73,7 @@ defmodule TelemetryMetricsCloudwatch do
   ## Notes on AWS
 
   [`ExAws`](https://hexdocs.pm/ex_aws/ExAws.html) is the library used to send metrics to CloudWatch.  Make sure your
-  [keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the 
+  [keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the
   [correct permissions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/permissions-reference-cw.html) of `cloudwatch:PutMetricData`.
 
   Up to 10 tags are sent up to AWS as dimensions for a given metric.  Every metric name will have a suffix added based on
@@ -123,7 +123,7 @@ defmodule TelemetryMetricsCloudwatch do
 
     for {event, metrics} <- groups do
       id = {__MODULE__, event, self()}
-      :telemetry.attach(id, event, &handle_telemetry_event/4, {self(), metrics})
+      :telemetry.attach(id, event, &__MODULE__.handle_telemetry_event/4, {self(), metrics})
     end
 
     state = %Cache{
@@ -159,7 +159,7 @@ defmodule TelemetryMetricsCloudwatch do
   @impl true
   def handle_info(_message, state), do: {:noreply, state}
 
-  defp handle_telemetry_event(_event_name, measurements, metadata, {pid, metrics}),
+  def handle_telemetry_event(_event_name, measurements, metadata, {pid, metrics}),
     do: Kernel.send(pid, {:handle_event, measurements, metadata, metrics})
 
   defp schedule_push_check(%Cache{push_interval: push_interval}),
