@@ -243,11 +243,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         60
 
       other ->
-        Logger.error(
-          "Could not process storage_resolution #{inspect(other)}. Falling back to default."
-        )
-
-        60
+        raise "Unsupported storage_resolution: #{inspect(other)}"
     end
   end
 end
