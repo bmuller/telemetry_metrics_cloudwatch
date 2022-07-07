@@ -1,5 +1,11 @@
 # Changelog for v0.3.x
 
+## Unreleased
+
+### Enhancements
+
+ * Support for storage resolution argument to handle high resolution (#6)
+
 ## v0.3.2 (2022-05-11)
 
 ### Enhancements
