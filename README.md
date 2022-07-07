@@ -81,7 +81,7 @@ To write [high-resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/
 counter(
   "http.request.count",
   reporter_options: [storage_resolution: 1]
-),
+)
 ```
 
 ### When Data is Sent
