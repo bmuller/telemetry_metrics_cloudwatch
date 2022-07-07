@@ -164,7 +164,8 @@ defmodule TelemetryMetricsCloudwatch.Cache do
           metric_name: extract_string_name(metric) <> ".summary",
           values: measurements,
           dimensions: tags,
-          unit: get_unit(metric.unit)
+          unit: get_unit(metric.unit),
+          storage_resolution: get_storage_resolution(metric.reporter_options)
         ]
       end)
 
@@ -180,7 +181,8 @@ defmodule TelemetryMetricsCloudwatch.Cache do
           metric_name: extract_string_name(metric) <> ".count",
           value: measurement,
           dimensions: tags,
-          unit: "Count"
+          unit: "Count",
+          storage_resolution: get_storage_resolution(metric.reporter_options)
         ]
       end)
 
@@ -196,7 +198,8 @@ defmodule TelemetryMetricsCloudwatch.Cache do
           metric_name: extract_string_name(metric) <> ".sum",
           value: measurement,
           dimensions: tags,
-          unit: get_unit(metric.unit)
+          unit: get_unit(metric.unit),
+          storage_resolution: get_storage_resolution(metric.reporter_options)
         ]
       end)
 
@@ -212,7 +215,8 @@ defmodule TelemetryMetricsCloudwatch.Cache do
           metric_name: extract_string_name(metric) <> ".last_value",
           value: measurement,
           dimensions: tags,
-          unit: get_unit(metric.unit)
+          unit: get_unit(metric.unit),
+          storage_resolution: get_storage_resolution(metric.reporter_options)
         ]
       end)
 
@@ -227,6 +231,19 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       |> Kernel.<>("s")
     else
       "None"
+    end
+  end
+
+  defp get_storage_resolution(reporter_options) do
+    case Keyword.get(reporter_options, :storage_resolution, :standard) do
+      :high ->
+        1
+
+      :standard ->
+        60
+
+      other ->
+        raise "Unsupported storage_resolution: #{inspect(other)}"
     end
   end
 end

@@ -75,6 +75,15 @@ below for posting rules).  For instance:
 
 These metrics are sent to CloudWatch based on the rules described below.
 
+To write [high-resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics=), supply the `:storage_resolution` option (which can be the default of `:standard` or `:high`):
+
+```elixir
+counter(
+  "http.request.count",
+  reporter_options: [storage_resolution: :high]
+)
+```
+
 ### When Data is Sent
 
 Cloudwatch has [certain constraints](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)

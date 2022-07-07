@@ -33,7 +33,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 1,
                dimensions: [host: "a host", port: "123"],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
     end
 
@@ -57,7 +58,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 1,
                dimensions: [host: "a host", port: "123"],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
     end
 
@@ -82,7 +84,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 1,
                dimensions: Enum.take(tvalues, 10),
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
     end
   end
@@ -99,7 +102,13 @@ defmodule TelemetryMetricsCloudwatchTest do
       {postcache, metrics} = Cache.pop_metrics(cache)
 
       assert metrics == [
-               [metric_name: "aname.value.count", value: 1, dimensions: [], unit: "Count"]
+               [
+                 metric_name: "aname.value.count",
+                 value: 1,
+                 dimensions: [],
+                 unit: "Count",
+                 storage_resolution: 60
+               ]
              ]
 
       assert Cache.metric_count(postcache) == 0
@@ -122,7 +131,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 2,
                dimensions: [],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
 
       assert Cache.metric_count(postcache) == 0
@@ -144,7 +154,13 @@ defmodule TelemetryMetricsCloudwatchTest do
       {postcache, metrics} = Cache.pop_metrics(cache)
 
       assert metrics == [
-               [metric_name: "aname.value.sum", value: 233, dimensions: [], unit: "None"]
+               [
+                 metric_name: "aname.value.sum",
+                 value: 233,
+                 dimensions: [],
+                 unit: "None",
+                 storage_resolution: 60
+               ]
              ]
 
       assert Cache.metric_count(postcache) == 0
@@ -168,7 +184,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 1,
                dimensions: [],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
     end
 
@@ -189,7 +206,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 1,
                dimensions: [],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
     end
 
@@ -215,7 +233,8 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 2,
                dimensions: [],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
 
       assert Cache.metric_count(postcache) == 0
@@ -245,11 +264,34 @@ defmodule TelemetryMetricsCloudwatchTest do
                metric_name: "aname.value.count",
                value: 2,
                dimensions: [],
-               unit: "Count"
+               unit: "Count",
+               storage_resolution: 60
              ]
 
       assert Cache.metric_count(postcache) == 0
       assert Cache.max_values_per_metric(postcache) == 0
+    end
+
+    test "should respect the storage resolution option" do
+      counter =
+        Metrics.counter([:aname, :value],
+          reporter_options: [storage_resolution: :high]
+        )
+
+      cache = Cache.push_measurement(%Cache{}, %{value: 112}, %{}, counter)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      {_postcache, [metrics]} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               metric_name: "aname.value.count",
+               value: 1,
+               dimensions: [],
+               unit: "Count",
+               storage_resolution: 1
+             ]
     end
   end
 end
