@@ -275,7 +275,7 @@ defmodule TelemetryMetricsCloudwatchTest do
     test "should respect the storage resolution option" do
       counter =
         Metrics.counter([:aname, :value],
-          reporter_options: [storage_resolution: 1]
+          reporter_options: [storage_resolution: :high]
         )
 
       cache = Cache.push_measurement(%Cache{}, %{value: 112}, %{}, counter)

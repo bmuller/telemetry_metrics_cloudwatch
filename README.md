@@ -80,7 +80,7 @@ To write [high-resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/
 ```elixir
 counter(
   "http.request.count",
-  reporter_options: [storage_resolution: 1]
+  reporter_options: [storage_resolution: :high]
 )
 ```
 

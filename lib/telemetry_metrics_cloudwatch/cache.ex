@@ -235,6 +235,19 @@ defmodule TelemetryMetricsCloudwatch.Cache do
   end
 
   defp get_storage_resolution(reporter_options) do
-    Keyword.get(reporter_options, :storage_resolution, 60)
+    case Keyword.get(reporter_options, :storage_resolution, :standard) do
+      :high ->
+        1
+
+      :standard ->
+        60
+
+      other ->
+        Logger.error(
+          "Could not process storage_resolution #{inspect(other)}. Falling back to default."
+        )
+
+        60
+    end
   end
 end
