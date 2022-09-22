@@ -61,14 +61,16 @@ defmodule TelemetryMetricsCloudwatch do
   option) or when the data cache has reached the maximum size that CloudWatch will accept.
 
   ### Event Sampling
-  You can control the rate at which your metrics are queued by configuring the `:sample_rate` option using a value
-  between 0.0 and 1.0. A sample rate value of 0.0 will ensure no events are sent, whereas a sample rate
-  value of 1.0 will ensure all events are sent. If you set the sample rate to 0.25, you would effectively
-  queue 25% of your metrics.
+  You can optionally send only a portion of reported events to CloudWatch via the `:sample_rate` option.  This
+  parameter should contain a value between 0.0 and 1.0 (inclusive), and represents the proportion of events that
+  will be reported.  For instance, a sample rate value of 0.0 will ensure no events are sent, whereas a sample
+  rate value of 1.0 will ensure all events are sent. A sample rate of 0.25 will result in roughly a quarter of
+  all events being sent.
 
-  *Note:* Using sampling could cause issues when using "Sum", "Summary", or "Counter" metrics due to the nature of
-  those types of metrics. Ensure you have enough quantity of data to justify sampling, and then multiply your
-  collected metrics by your sample rate as needed.
+  *Note:* Using a sampling rate of less than 1.0 will result in incorrect values for the "Sum" and "Counter" metric
+  types (and some of the values like min/max for the "Summary" metric type) due to the under-reporting of events.
+  You should only use a sampling rate of less than 1.0 if you have a guaranteed high rate of events and only care
+  about summary statistics like averages and percentiles.
 
   ## Units
 
