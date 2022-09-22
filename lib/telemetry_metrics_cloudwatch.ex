@@ -66,6 +66,10 @@ defmodule TelemetryMetricsCloudwatch do
   value of 1.0 will ensure all events are sent. If you set the sample rate to 0.25, you would effectively
   queue 25% of your metrics.
 
+  *Note:* Using sampling could cause issues when using "Sum", "Summary", or "Counter" metrics due to the nature of
+  those types of metrics. Ensure you have enough quantity of data to justify sampling, and then multiply your
+  collected metrics by your sample rate as needed.
+
   ## Units
 
   In order to report metrics in the CloudWatch UI, they must be one of the following values:
