@@ -165,11 +165,12 @@ defmodule TelemetryMetricsCloudwatch do
       ) do
     newstate =
       Enum.reduce(metrics, state, fn metric, state ->
-        # Here's where to sample
         if sample_measurement?(sample_rate) do
           state
           |> Cache.push_measurement(measurements, metadata, metric)
           |> push_check()
+        else
+          state
         end
       end)
 
