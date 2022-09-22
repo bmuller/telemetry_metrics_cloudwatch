@@ -60,6 +60,16 @@ defmodule TelemetryMetricsCloudwatch do
   will send accumulated metric data at least every minute (configurable by the `:push_interval`
   option) or when the data cache has reached the maximum size that CloudWatch will accept.
 
+  ### Event Sampling
+  You can control the rate at which your metrics are queued by configuring the `:sample_rate` option using a value
+  between 0.0 and 1.0. A sample rate value of 0.0 will ensure no events are sent, whereas a sample rate
+  value of 1.0 will ensure all events are sent. If you set the sample rate to 0.25, you would effectively
+  queue 25% of your metrics.
+
+  *Note:* Using sampling could cause issues when using "Sum", "Summary", or "Counter" metrics due to the nature of
+  those types of metrics. Ensure you have enough quantity of data to justify sampling, and then multiply your
+  collected metrics by your sample rate as needed.
+
   ## Units
 
   In order to report metrics in the CloudWatch UI, they must be one of the following values:
@@ -102,6 +112,7 @@ defmodule TelemetryMetricsCloudwatch do
   * `:metrics` - a list of `Telemetry.Metrics` to track.
   * `:namespace` - Namespace to use in CloudWatch
   * `:push_interval` - The minimum interval that metrics are guaranteed to be pushed to cloudwatch (in milliseconds)
+  * `:sample_rate` - Sampling factor to apply to metrics. 0.0 will deny all events, 1.0 will queue all events.
   """
   def start_link(opts) do
     server_opts = Keyword.take(opts, [:name])
@@ -113,11 +124,17 @@ defmodule TelemetryMetricsCloudwatch do
     Cache.validate_metrics(metrics)
     namespace = Keyword.get(opts, :namespace, "Telemetry")
     push_interval = Keyword.get(opts, :push_interval, 60_000)
-    GenServer.start_link(__MODULE__, {metrics, namespace, push_interval}, server_opts)
+    sample_rate = Keyword.get(opts, :sample_rate, 1.0)
+
+    GenServer.start_link(
+      __MODULE__,
+      {metrics, namespace, push_interval, sample_rate},
+      server_opts
+    )
   end
 
   @impl true
-  def init({metrics, namespace, push_interval}) do
+  def init({metrics, namespace, push_interval, sample_rate}) do
     Process.flag(:trap_exit, true)
     groups = Enum.group_by(metrics, & &1.event_name)
 
@@ -130,7 +147,8 @@ defmodule TelemetryMetricsCloudwatch do
       metric_names: Map.keys(groups),
       namespace: namespace,
       last_run: System.monotonic_time(:second),
-      push_interval: push_interval
+      push_interval: push_interval,
+      sample_rate: sample_rate
     }
 
     schedule_push_check(state)
@@ -146,11 +164,17 @@ defmodule TelemetryMetricsCloudwatch do
 
   @impl true
   def handle_info({:handle_event, measurements, metadata, metrics}, state) do
+    %Cache{sample_rate: sample_rate} = state
+
     newstate =
       Enum.reduce(metrics, state, fn metric, state ->
-        state
-        |> Cache.push_measurement(measurements, metadata, metric)
-        |> push_check()
+        if sample_measurement?(sample_rate) do
+          state
+          |> Cache.push_measurement(measurements, metadata, metric)
+          |> push_check()
+        else
+          state
+        end
       end)
 
     {:noreply, newstate}
@@ -201,4 +225,9 @@ defmodule TelemetryMetricsCloudwatch do
 
     :ok
   end
+
+  @spec sample_measurement?(number()) :: boolean()
+  defp sample_measurement?(sample_rate) when sample_rate == 1, do: true
+  defp sample_measurement?(sample_rate) when sample_rate == 0, do: false
+  defp sample_measurement?(sample_rate), do: :rand.uniform() <= sample_rate
 end
