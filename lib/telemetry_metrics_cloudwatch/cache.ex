@@ -9,6 +9,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     :namespace,
     :last_run,
     :push_interval,
+    :sample_rate,
     counters: %{},
     sums: %{},
     last_values: %{},

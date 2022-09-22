@@ -91,6 +91,9 @@ on the number of metrics that can be sent up at any given time.  `TelemetryMetri
 will send accumulated metric data at least every minute (configurable by the `:push_interval`
 option) or when the data cache has reached the maximum size that CloudWatch will accept.
 
+### Event Sampling
+You can control the rate at which your metrics are queued by configuring the `:sample_rate` option using a value between 0.0 and 1.0. A sample rate value of 0.0 will ensure no events are sent, whereas a sample rate value of 1.0 will ensure all events are sent. If you set the sample rate to 0.25, you would effectively queue 25% of your metrics.
+
 ### Units
   
 In order to report metrics in the CloudWatch UI, they must be one of the following values:
