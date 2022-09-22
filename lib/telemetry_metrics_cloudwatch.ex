@@ -159,10 +159,9 @@ defmodule TelemetryMetricsCloudwatch do
   end
 
   @impl true
-  def handle_info(
-        {:handle_event, measurements, metadata, metrics},
-        %Cache{sample_rate: sample_rate} = state
-      ) do
+  def handle_info({:handle_event, measurements, metadata, metrics}, state) do
+    %Cache{sample_rate: sample_rate} = state
+
     newstate =
       Enum.reduce(metrics, state, fn metric, state ->
         if sample_measurement?(sample_rate) do
@@ -224,12 +223,7 @@ defmodule TelemetryMetricsCloudwatch do
   end
 
   @spec sample_measurement?(number()) :: boolean()
-  defp sample_measurement?(1), do: true
-  defp sample_measurement?(1.0), do: true
-  defp sample_measurement?(0), do: false
-  defp sample_measurement?(0.0), do: false
-
-  defp sample_measurement?(sample_rate) do
-    :rand.uniform() < sample_rate
-  end
+  defp sample_measurement?(sample_rate) when sample_rate == 1, do: true
+  defp sample_measurement?(sample_rate) when sample_rate == 0, do: false
+  defp sample_measurement?(sample_rate), do: :rand.uniform() <= sample_rate
 end
