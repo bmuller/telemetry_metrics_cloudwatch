@@ -2,14 +2,14 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/bmuller/telemetry_metrics_cloudwatch"
-  @version "0.3.2"
+  @version "0.3.3"
 
   def project do
     [
       app: :telemetry_metrics_cloudwatch,
       aliases: aliases(),
       version: @version,
-      elixir: "~> 1.8",
+      elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Provides an AWS CloudWatch reporter for Telemetry Metrics definitions.",
@@ -62,8 +62,8 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
   defp deps do
     [
       {:ex_aws_cloudwatch, "~> 2.0"},
-      {:ex_doc, "~> 0.24", only: :dev},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.28", only: :dev},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:telemetry_metrics, "~> 0.6"}
     ]
   end
