@@ -1,6 +1,6 @@
 # Changelog for v0.3.x
 
-## Unreleased
+## v0.3.3 (2022-09-22)
 
 ### Enhancements
 
