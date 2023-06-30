@@ -6,8 +6,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        otp: [24, 25, 26]
-        elixir: ['1.13', '1.14', '1.15']
+        otp: [24, 25]
+        elixir: ['1.13', '1.14']
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{matrix.otp}}
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix credo
+      - run: mix test
+
+  test-latest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp: [26]
+        elixir: ['1.15']
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
