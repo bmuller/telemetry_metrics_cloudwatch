@@ -1,5 +1,5 @@
 # TelemetryMetricsCloudwatch
-[![Build Status](https://secure.travis-ci.org/bmuller/telemetry_metrics_cloudwatch.png?branch=master)](https://travis-ci.org/bmuller/telemetry_metrics_cloudwatch)
+[![Build Status](https://github.com/bmuller/telemetry_metrics_cloudwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/bmuller/telemetry_metrics_cloudwatch/actions/workflows/ci.yml)
 [![Hex pm](http://img.shields.io/hexpm/v/telemetry_metrics_cloudwatch.svg?style=flat)](https://hex.pm/packages/telemetry_metrics_cloudwatch)
 [![API Docs](https://img.shields.io/badge/api-docs-lightgreen.svg?style=flat)](https://hexdocs.pm/telemetry_metrics_cloudwatch/)
 

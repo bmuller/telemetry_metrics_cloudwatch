@@ -51,7 +51,10 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         coalesce(cache, metric, measurement, tags)
 
       true ->
-        Logger.warn("Ignoring non-numeric value for #{inspect(metric)}: #{inspect(measurement)}")
+        Logger.warning(
+          "Ignoring non-numeric value for #{inspect(metric)}: #{inspect(measurement)}"
+        )
+
         cache
     end
   rescue
@@ -148,7 +151,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
 
   def validate_metrics([head | rest]) do
     unless Enum.member?([Counter, Summary, LastValue, Sum], head.__struct__),
-      do: Logger.warn("#{head.__struct__} is not supported by the Reporter #{__MODULE__}")
+      do: Logger.warning("#{head.__struct__} is not supported by the Reporter #{__MODULE__}")
 
     validate_metrics(rest)
   end

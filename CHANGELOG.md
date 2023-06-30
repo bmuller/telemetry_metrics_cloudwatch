@@ -1,5 +1,11 @@
 # Changelog for v0.3.x
 
+## v0.3.4 (2023-06-30)
+
+### Enhancements
+
+  * Updates to remove warnings for Elixir 1.15
+
 ## v0.3.3 (2022-09-22)
 
 ### Enhancements

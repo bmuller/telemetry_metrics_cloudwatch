@@ -14,7 +14,7 @@ defmodule TelemetryMetricsCloudwatchTest do
 
   describe "When handling tags a cache" do
     test "should be able to handle tags with empty/nil values" do
-      tvalues = %{host: 'a host', port: 123, something: "", somethingelse: nil}
+      tvalues = %{host: ~c"a host", port: 123, something: "", somethingelse: nil}
 
       counter =
         Metrics.counter([:aname, :value],
@@ -29,17 +29,19 @@ defmodule TelemetryMetricsCloudwatchTest do
 
       {_postcache, [metrics]} = Cache.pop_metrics(cache)
 
-      assert metrics == [
+      assert Keyword.drop(metrics, [:dimensions]) == [
                metric_name: "aname.value.count",
                value: 1,
-               dimensions: [host: "a host", port: "123"],
                unit: "Count",
                storage_resolution: 60
              ]
+
+      target_dimensions = [host: "a host", port: "123"]
+      assert metrics |> Keyword.get(:dimensions) |> Keyword.equal?(target_dimensions)
     end
 
     test "should be able to handle tags with non string values" do
-      tvalues = %{host: 'a host', port: 123}
+      tvalues = %{host: ~c"a host", port: 123}
 
       counter =
         Metrics.counter([:aname, :value],
@@ -54,13 +56,15 @@ defmodule TelemetryMetricsCloudwatchTest do
 
       {_postcache, [metrics]} = Cache.pop_metrics(cache)
 
-      assert metrics == [
+      assert Keyword.drop(metrics, [:dimensions]) == [
                metric_name: "aname.value.count",
                value: 1,
-               dimensions: [host: "a host", port: "123"],
                unit: "Count",
                storage_resolution: 60
              ]
+
+      target_dimensions = [host: "a host", port: "123"]
+      assert metrics |> Keyword.get(:dimensions) |> Keyword.equal?(target_dimensions)
     end
 
     test "should be able to handle more than 10 tags" do
