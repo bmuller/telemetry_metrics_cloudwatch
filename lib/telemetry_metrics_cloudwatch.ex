@@ -220,12 +220,19 @@ defmodule TelemetryMetricsCloudwatch do
   end
 
   @impl true
-  def terminate(_, %Cache{metric_names: events}) do
+  def terminate(_, %Cache{metric_names: events, namespace: namespace} = state) do
     for event <- events do
       :telemetry.detach({__MODULE__, event, self()})
     end
 
-    :ok
+    case Cache.pop_metrics(state) do
+      {_, []} ->
+        :ok
+
+      {_, metric_data} ->
+        Cloudwatch.send_metrics(metric_data, namespace)
+        :ok
+    end
   end
 
   @spec sample_measurement?(number()) :: boolean()
