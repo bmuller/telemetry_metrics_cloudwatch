@@ -1,5 +1,11 @@
 # Changelog for v0.3.x
 
+## Unreleased
+
+### Enhancements
+
+  * Metrics are now sent on terminate (#9 h/t @devstopfix)
+
 ## v0.3.4 (2023-06-30)
 
 ### Enhancements
