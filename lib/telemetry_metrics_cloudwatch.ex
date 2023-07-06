@@ -230,6 +230,7 @@ defmodule TelemetryMetricsCloudwatch do
         :ok
 
       {_, metric_data} ->
+        Logger.debug("#{__MODULE__} flushing metrics")
         Cloudwatch.send_metrics(metric_data, namespace)
         :ok
     end
