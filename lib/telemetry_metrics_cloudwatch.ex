@@ -80,7 +80,7 @@ defmodule TelemetryMetricsCloudwatch do
     * Byte sizes: `:byte`, `:kilobyte`, `:megabyte`, `:gigabyte`, `:terabyte`
     * Bit sizes: `:bit`, `:kilobit`, `:megabit`, `:gigabit`, `:terabit`
 
-  For `Telementry.Metrics.Counter`s, the unit will always be `:count`.  Otherwise, the unit will be treated as `nil`.
+  For `Telemetry.Metrics.Counter`s, the unit will always be `:count`.  Otherwise, the unit will be treated as `nil`.
 
   ## Notes on AWS
 
@@ -93,7 +93,7 @@ defmodule TelemetryMetricsCloudwatch do
   if your metrics are:
 
       summary("my_app.repo.query.total_time", unit: {:nanosecond, :millisecond})
-      count("my_app.repo.query.total_time")
+      counter("my_app.repo.query.total_time")
 
   Then the metric names in CloudWatch will be:
 
