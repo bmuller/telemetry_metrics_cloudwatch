@@ -1,10 +1,13 @@
-# Changelog for v0.3.x
+# Changelog
 
-## Unreleased
+## v1.0.0 (2024-07-09)
+
+API is considered stable.
 
 ### Enhancements
 
   * Metrics are now sent on terminate (#9 h/t @devstopfix)
+  * Core dependency telemetry_metrics updated to stable version 1.0.0 (#11 h/t @aloukissas)
 
 ## v0.3.4 (2023-06-30)
 
