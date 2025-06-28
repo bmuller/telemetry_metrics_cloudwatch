@@ -1,4 +1,10 @@
-# Changelog
+# Changelog for v1.x
+
+## v1.1.0 (2025-06-27)
+
+### Deprecations
+
+  * Removed support for Elixir before version 1.15
 
 ## v1.0.0 (2024-07-09)
 
