@@ -12,7 +12,7 @@ To install `telemetry_metrics_cloudwatch`, just add an entry to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:telemetry_metrics_cloudwatch, "~> 0.3"}
+    {:telemetry_metrics_cloudwatch, "~> 1.1"}
   ]
 end
 ```
