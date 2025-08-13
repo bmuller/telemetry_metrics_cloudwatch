@@ -171,8 +171,8 @@ defmodule TelemetryMetricsCloudwatchTest do
       assert Cache.max_values_per_metric(postcache) == 0
     end
 
-    test "should keep values when given keep function" do
-      counter = Metrics.counter([:aname, :value], keep: &(Map.get(&1, :good) == 1))
+    test "should keep values when given keep/1 function" do
+      counter = Metrics.counter([:aname, :value], keep: &(&1.good == 1))
 
       cache =
         %Cache{}
@@ -193,13 +193,59 @@ defmodule TelemetryMetricsCloudwatchTest do
              ]
     end
 
-    test "should drop values when given drop function" do
-      counter = Metrics.counter([:aname, :value], drop: &(Map.get(&1, :bad) == 1))
+    test "should keep values when given keep/2 function" do
+      counter = Metrics.counter([:aname, :value], keep: &(&1.good == 1 and &2.value <= 112))
+
+      cache =
+        %Cache{}
+        |> Cache.push_measurement(%{value: 112}, %{good: 1}, counter)
+        |> Cache.push_measurement(%{value: 112}, %{good: 0}, counter)
+        |> Cache.push_measurement(%{value: 113}, %{good: 1}, counter)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      {_postcache, [metrics]} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               metric_name: "aname.value.count",
+               value: 1,
+               dimensions: [],
+               unit: "Count",
+               storage_resolution: 60
+             ]
+    end
+
+    test "should drop values when given drop/1 function" do
+      counter = Metrics.counter([:aname, :value], drop: &(&1.bad == 1))
 
       cache =
         %Cache{}
         |> Cache.push_measurement(%{value: 112}, %{bad: 1}, counter)
         |> Cache.push_measurement(%{value: 112}, %{bad: 0}, counter)
+
+      assert Cache.metric_count(cache) == 1
+      assert Cache.max_values_per_metric(cache) == 1
+
+      {_postcache, [metrics]} = Cache.pop_metrics(cache)
+
+      assert metrics == [
+               metric_name: "aname.value.count",
+               value: 1,
+               dimensions: [],
+               unit: "Count",
+               storage_resolution: 60
+             ]
+    end
+
+    test "should drop values when given drop/2 function" do
+      counter = Metrics.counter([:aname, :value], drop: &(&1.bad == 1 or &2.value > 112))
+
+      cache =
+        %Cache{}
+        |> Cache.push_measurement(%{value: 112}, %{bad: 1}, counter)
+        |> Cache.push_measurement(%{value: 112}, %{bad: 0}, counter)
+        |> Cache.push_measurement(%{value: 113}, %{bad: 0}, counter)
 
       assert Cache.metric_count(cache) == 1
       assert Cache.max_values_per_metric(cache) == 1

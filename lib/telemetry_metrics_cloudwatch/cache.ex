@@ -37,7 +37,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         Logger.debug("Ignoring nil value for #{inspect(metric)}")
         cache
 
-      drop?(metric, metadata) ->
+      not keep?(metric, metadata, measurements) ->
         Logger.debug("Dropping value for #{inspect(metric)}")
         cache
 
@@ -128,13 +128,13 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     end
   end
 
-  defp drop?(%{keep: func}, metadata) when is_function(func, 1),
-    do: not func.(metadata)
-
-  defp drop?(%{drop: func}, metadata) when is_function(func, 1),
+  defp keep?(%{keep: func}, metadata, _measurements) when is_function(func, 1),
     do: func.(metadata)
 
-  defp drop?(_metric, _metadata), do: false
+  defp keep?(%{keep: func}, metadata, measurements) when is_function(func, 2),
+    do: func.(metadata, measurements)
+
+  defp keep?(_metric, _metadata, _measurements), do: true
 
   # extract up to 10 tags, and don't include any empty values
   # because cloudwatch won't handle any empty dimensions
