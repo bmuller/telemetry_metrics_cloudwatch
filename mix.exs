@@ -2,7 +2,7 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/bmuller/telemetry_metrics_cloudwatch"
-  @version "1.1.0"
+  @version "1.1.1"
 
   def project do
     [

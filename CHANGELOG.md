@@ -1,5 +1,11 @@
 # Changelog for v1.x
 
+## v1.1.1 (2025-08-13)
+
+### Enhancements
+
+  * Support event filtering based on measurements (#13 h/t @jaminthorns)
+
 ## v1.1.0 (2025-06-27)
 
 ### Deprecations
