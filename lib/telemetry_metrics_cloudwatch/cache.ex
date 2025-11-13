@@ -42,12 +42,6 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         cache
 
       is_number(measurement) ->
-        sname = extract_string_name(metric)
-
-        msg =
-          "#{sname}[#{metric.__struct__}] received with value #{measurement} and tags #{inspect(tags)}"
-
-        Logger.debug(msg)
         coalesce(cache, metric, measurement, tags)
 
       true ->
