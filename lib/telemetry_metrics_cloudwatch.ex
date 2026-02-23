@@ -156,7 +156,6 @@ defmodule TelemetryMetricsCloudwatch do
       namespace: namespace,
       last_run: System.monotonic_time(:second),
       push_interval: push_interval,
-      sample_rate: sample_rate
     }
 
     schedule_push_check(state)
