@@ -142,7 +142,13 @@ defmodule TelemetryMetricsCloudwatch do
 
     for {event, metrics} <- groups do
       id = {__MODULE__, event, self()}
-      :telemetry.attach(id, event, &__MODULE__.handle_telemetry_event/4, {self(), metrics})
+
+      :telemetry.attach(
+        id,
+        event,
+        &__MODULE__.handle_telemetry_event/4,
+        {self(), metrics, sample_rate}
+      )
     end
 
     state = %Cache{
@@ -150,7 +156,6 @@ defmodule TelemetryMetricsCloudwatch do
       namespace: namespace,
       last_run: System.monotonic_time(:second),
       push_interval: push_interval,
-      sample_rate: sample_rate
     }
 
     schedule_push_check(state)
@@ -166,17 +171,11 @@ defmodule TelemetryMetricsCloudwatch do
 
   @impl true
   def handle_info({:handle_event, measurements, metadata, metrics}, state) do
-    %Cache{sample_rate: sample_rate} = state
-
     newstate =
       Enum.reduce(metrics, state, fn metric, state ->
-        if sample_measurement?(sample_rate) do
-          state
-          |> Cache.push_measurement(measurements, metadata, metric)
-          |> push_check()
-        else
-          state
-        end
+        state
+        |> Cache.push_measurement(measurements, metadata, metric)
+        |> push_check()
       end)
 
     {:noreply, newstate}
@@ -185,8 +184,13 @@ defmodule TelemetryMetricsCloudwatch do
   @impl true
   def handle_info(_message, state), do: {:noreply, state}
 
-  def handle_telemetry_event(_event_name, measurements, metadata, {pid, metrics}),
-    do: Kernel.send(pid, {:handle_event, measurements, metadata, metrics})
+  def handle_telemetry_event(_event_name, measurements, metadata, {pid, metrics, sample_rate}) do
+    if sample_measurement?(sample_rate) do
+      Kernel.send(pid, {:handle_event, measurements, metadata, metrics})
+    end
+
+    :ok
+  end
 
   defp schedule_push_check(%Cache{push_interval: push_interval}),
     do: Process.send_after(self(), :push_check, push_interval)
