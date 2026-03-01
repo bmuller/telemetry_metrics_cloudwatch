@@ -155,7 +155,7 @@ defmodule TelemetryMetricsCloudwatch do
       metric_names: Map.keys(groups),
       namespace: namespace,
       last_run: System.monotonic_time(:second),
-      push_interval: push_interval,
+      push_interval: push_interval
     }
 
     schedule_push_check(state)
