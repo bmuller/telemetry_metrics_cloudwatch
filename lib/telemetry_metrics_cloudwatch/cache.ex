@@ -9,6 +9,8 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     :namespace,
     :last_run,
     :push_interval,
+    :sample_rate,
+    :scale_counters,
     counters: %{},
     sums: %{},
     last_values: %{},
@@ -180,9 +182,11 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       cache
       |> Map.get(:counters)
       |> Enum.map(fn {{metric, tags}, measurement} ->
+        value = scale_value(measurement, cache.sample_rate, cache.scale_counters)
+
         [
           metric_name: extract_string_name(metric) <> ".count",
-          value: measurement,
+          value: value,
           dimensions: tags,
           unit: "Count",
           storage_resolution: get_storage_resolution(metric.reporter_options)
@@ -249,4 +253,9 @@ defmodule TelemetryMetricsCloudwatch.Cache do
         raise "Unsupported storage_resolution: #{inspect(other)}"
     end
   end
+
+  defp scale_value(value, _sample_rate, nil), do: value
+  defp scale_value(value, _sample_rate, false), do: value
+  defp scale_value(value, sample_rate, true) when sample_rate > 0, do: round(value / sample_rate)
+  defp scale_value(value, _sample_rate, true), do: value
 end

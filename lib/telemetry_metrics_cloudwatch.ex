@@ -115,6 +115,7 @@ defmodule TelemetryMetricsCloudwatch do
   * `:namespace` - Namespace to use in CloudWatch
   * `:push_interval` - The minimum interval that metrics are guaranteed to be pushed to cloudwatch (in milliseconds)
   * `:sample_rate` - Sampling factor to apply to metrics. 0.0 will deny all events, 1.0 will queue all events.
+  * `:scale_counters` - When true, counter values are scaled by (1/sample_rate) to correct for sampling (defaults to false)
   """
   def start_link(opts) do
     server_opts = Keyword.take(opts, [:name])
@@ -127,16 +128,17 @@ defmodule TelemetryMetricsCloudwatch do
     namespace = Keyword.get(opts, :namespace, "Telemetry")
     push_interval = Keyword.get(opts, :push_interval, 60_000)
     sample_rate = Keyword.get(opts, :sample_rate, 1.0)
+    scale_counters = Keyword.get(opts, :scale_counters, false)
 
     GenServer.start_link(
       __MODULE__,
-      {metrics, namespace, push_interval, sample_rate},
+      {metrics, namespace, push_interval, sample_rate, scale_counters},
       server_opts
     )
   end
 
   @impl true
-  def init({metrics, namespace, push_interval, sample_rate}) do
+  def init({metrics, namespace, push_interval, sample_rate, scale_counters}) do
     Process.flag(:trap_exit, true)
     groups = Enum.group_by(metrics, & &1.event_name)
 
@@ -155,7 +157,9 @@ defmodule TelemetryMetricsCloudwatch do
       metric_names: Map.keys(groups),
       namespace: namespace,
       last_run: System.monotonic_time(:second),
-      push_interval: push_interval
+      push_interval: push_interval,
+      sample_rate: sample_rate,
+      scale_counters: scale_counters
     }
 
     schedule_push_check(state)
