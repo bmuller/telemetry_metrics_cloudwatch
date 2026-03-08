@@ -5,6 +5,7 @@
 ### Enhancements
 
   * Improved performance by moving sampling to before sending message via Kernel.send/2 (#16 h/t @alechartung)
+  * Allow counters to be scaled based on sample rate (#17 h/t @alechartung)
 
 ## v1.1.1 (2025-08-13)
 
