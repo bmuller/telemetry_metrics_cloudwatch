@@ -116,7 +116,7 @@ defmodule TelemetryMetricsCloudwatch do
   * `:push_interval` - The minimum interval that metrics are guaranteed to be pushed to cloudwatch (in milliseconds)
   * `:sample_rate` - Sampling factor to apply to metrics. 0.0 will deny all events, 1.0 will queue all events.
   * `:scale_counters` - When true, counter values are scaled by (1/sample_rate) to correct for sampling (defaults to false)
-  * `:max_heap_size` - Maximum heap size for the GenServer process (defaults to 0, which means no limit)
+  * `:max_heap_size` - Maximum heap size (in bytes) for the GenServer process (defaults to 0, which means no limit)
   """
   def start_link(opts) do
     server_opts = Keyword.take(opts, [:name])
