@@ -69,9 +69,6 @@ defmodule TelemetryMetricsCloudwatch.Cache do
       cache
   end
 
-  # if the measurement is nil
-  defp coalesce(cache, _metric, nil, _tags), do: cache
-
   defp coalesce(%Cache{counters: counters} = cache, %Counter{} = metric, _measurement, tags) do
     counters = Map.update(counters, {metric, tags}, 1, &(&1 + 1))
     Map.put(cache, :counters, counters)

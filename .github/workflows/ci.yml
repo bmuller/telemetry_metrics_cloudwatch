@@ -2,8 +2,8 @@ name: ci
 on: push
 
 env:
-  LATEST_ELIXIR_VERSION: 1.18.x
-  LATEST_OTP_VERSION: 28.x
+  LATEST_ELIXIR_VERSION: 1.20.x
+  LATEST_OTP_VERSION: 29.x
 
 jobs:
   test:
@@ -11,6 +11,12 @@ jobs:
     strategy:
       matrix:
         include:
+          - pair:
+              otp: 29.x
+              elixir: 1.20.x
+          - pair:
+              otp: 29.x
+              elixir: 1.19.x
           - pair:
               otp: 28.x
               elixir: 1.18.x
@@ -34,7 +40,7 @@ jobs:
               elixir: 1.15.x
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: erlef/setup-beam@v1
         with:
           elixir-version: ${{ matrix.pair.elixir }}
@@ -47,7 +53,7 @@ jobs:
   dialyzer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: erlef/setup-beam@v1
         with:
           elixir-version:  ${{ env.LATEST_ELIXIR_VERSION }}
