@@ -7,6 +7,7 @@
   * Improved performance by moving sampling to before sending message via Kernel.send/2 (#16 h/t @alechartung)
   * Allow counters to be scaled based on sample rate (#17 h/t @alechartung)
   * Added a parameter for the max heap size of the metrics collection process (#18 h/t @alechartung)
+  * Added a `dry_run` parameter to allow skipping actually sending metrics to Cloudwatch (#19 h/t @alechartung)
 
 ## v1.1.1 (2025-08-13)
 
