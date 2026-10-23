@@ -12,12 +12,17 @@ To install `telemetry_metrics_cloudwatch`, just add an entry to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:telemetry_metrics_cloudwatch, "~> 1.1"}
+    {:telemetry_metrics_cloudwatch, "~> 1.1"},
+    {:req, "~> 0.7.2"},
+    {:aws_credentials, "~> 1.0"}
   ]
 end
 ```
 
 (Check [Hex](https://hex.pm/packages/telemetry_metrics_cloudwatch) to make sure you're using an up-to-date version number.)
+
+Metrics are sent to CloudWatch by a client, and the client you pick decides which
+dependency you need.  See [AWS Setup](#aws-setup) below.
 
 ## Usage
 
@@ -106,10 +111,39 @@ In order to report metrics in the CloudWatch UI, they must be one of the followi
 
 For `Telementry.Metrics.Counter`s, the unit will always be `:count`.  Otherwise, the unit will be treated as `nil`.
 
-### ExAws Setup
+### AWS Setup
 
-[`ExAws`](https://hexdocs.pm/ex_aws/ExAws.html) is the library used to send metrics to CloudWatch.  Make sure your
-[keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the
+Metrics are sent to CloudWatch by a `TelemetryMetricsCloudwatch.Cloudwatch` client.  Two ship
+with this library, and both of their dependencies are optional, so add the one that goes with
+the client you want:
+
+  * `TelemetryMetricsCloudwatch.Cloudwatch.Req` (the default) calls the CloudWatch API directly
+    over [`Req`](https://hexdocs.pm/req/Req.html), with no AWS SDK in between.  It needs `:req`,
+    and `:aws_credentials` unless you configure static credentials.
+  * `TelemetryMetricsCloudwatch.Cloudwatch.ExAws` uses
+    [`ExAws`](https://hexdocs.pm/ex_aws/ExAws.html), and needs `:ex_aws_cloudwatch`.
+
+The client is resolved from the `:client` option passed to
+`TelemetryMetricsCloudwatch.start_link/1`, then the application environment, and finally from
+whichever dependency is available (preferring `Req`):
+
+```elixir
+config :telemetry_metrics_cloudwatch, client: TelemetryMetricsCloudwatch.Cloudwatch.ExAws
+```
+
+The `Req` client picks up credentials and region from the `:telemetry_metrics_cloudwatch`
+`:req` application environment, then `:aws_credentials`, then the usual `AWS_*` environment
+variables, so the common case needs no configuration at all:
+
+```elixir
+config :telemetry_metrics_cloudwatch, :req,
+  region: "us-east-2",
+  access_key_id: "AKIA...",
+  secret_access_key: "...",
+  req_options: [retry: false]
+```
+
+Whichever client you use, make sure your keys have the
 [correct permissions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/permissions-reference-cw.html) of `cloudwatch:PutMetricData`.
 
 Up to 10 tags are sent up to AWS as dimensions for a given metric.

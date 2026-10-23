@@ -1,5 +1,22 @@
 # Changelog for v1.x
 
+## Unreleased
+
+### Enhancements
+
+  * Metrics are now sent by a pluggable `TelemetryMetricsCloudwatch.Cloudwatch` client, selected
+    with the `:client` option or the `:client` application environment
+  * Added `TelemetryMetricsCloudwatch.Cloudwatch.Req`, which calls the CloudWatch API directly
+    over `Req` instead of going through an AWS SDK
+
+### Backwards incompatible changes
+
+  * `:ex_aws_cloudwatch` is now an optional dependency, and the `Req` client is preferred when
+    both are available.  To keep sending metrics through `ExAws`, add it to your deps and set
+    `config :telemetry_metrics_cloudwatch, client: TelemetryMetricsCloudwatch.Cloudwatch.ExAws`
+  * `TelemetryMetricsCloudwatch.Cloudwatch.send_metrics/2` is now a behaviour callback rather
+    than a function; call it on a client module instead
+
 ## v1.1.2 (2026-06-07)
 
 ### Enhancements

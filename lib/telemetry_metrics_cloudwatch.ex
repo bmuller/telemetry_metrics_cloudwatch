@@ -84,8 +84,13 @@ defmodule TelemetryMetricsCloudwatch do
 
   ## Notes on AWS
 
-  [`ExAws`](https://hexdocs.pm/ex_aws/ExAws.html) is the library used to send metrics to CloudWatch.  Make sure your
-  [keys are configured](https://hexdocs.pm/ex_aws/ExAws.html#module-aws-key-configuration) and that they have the
+  Metrics are sent to CloudWatch by a `TelemetryMetricsCloudwatch.Cloudwatch` client:
+  either `TelemetryMetricsCloudwatch.Cloudwatch.Req` (which needs `:req`) or
+  `TelemetryMetricsCloudwatch.Cloudwatch.ExAws` (which needs `:ex_aws_cloudwatch`).
+  Both dependencies are optional, so add the one that goes with the client you want
+  and see `TelemetryMetricsCloudwatch.Cloudwatch` for how the client is chosen.
+
+  Whichever client you use, make sure your keys are configured and that they have the
   [correct permissions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/permissions-reference-cw.html) of `cloudwatch:PutMetricData`.
 
   Up to 10 tags are sent up to AWS as dimensions for a given metric.  Every metric name will have a suffix added based on
@@ -118,6 +123,8 @@ defmodule TelemetryMetricsCloudwatch do
   * `:scale_counters` - When true, counter values are scaled by (1/sample_rate) to correct for sampling (defaults to false)
   * `:max_heap_size` - Maximum heap size (in bytes) for the GenServer process (defaults to 0, which means no limit)
   * `:dry_run` - When true, metrics are processed but not sent to CloudWatch (defaults to false, useful for testing)
+  * `:client` - The `TelemetryMetricsCloudwatch.Cloudwatch` client used to send metrics (defaults to
+    `TelemetryMetricsCloudwatch.Cloudwatch.default_client/0`)
   """
   def start_link(opts) do
     server_opts = Keyword.take(opts, [:name])
@@ -134,16 +141,23 @@ defmodule TelemetryMetricsCloudwatch do
     max_heap_size = Keyword.get(opts, :max_heap_size, 0)
     dry_run = Keyword.get(opts, :dry_run, false)
 
+    client =
+      opts
+      |> Keyword.get_lazy(:client, &Cloudwatch.default_client/0)
+      |> Cloudwatch.validate_client!()
+
     GenServer.start_link(
       __MODULE__,
-      {metrics, namespace, push_interval, sample_rate, scale_counters, max_heap_size, dry_run},
+      {metrics, namespace, push_interval, sample_rate, scale_counters, max_heap_size, dry_run,
+       client},
       server_opts
     )
   end
 
   @impl true
   def init(
-        {metrics, namespace, push_interval, sample_rate, scale_counters, max_heap_size, dry_run}
+        {metrics, namespace, push_interval, sample_rate, scale_counters, max_heap_size, dry_run,
+         client}
       ) do
     Process.flag(:trap_exit, true)
     Process.flag(:max_heap_size, max_heap_size)
@@ -167,7 +181,8 @@ defmodule TelemetryMetricsCloudwatch do
       push_interval: push_interval,
       sample_rate: sample_rate,
       scale_counters: scale_counters,
-      dry_run: dry_run
+      dry_run: dry_run,
+      client: client
     }
 
     schedule_push_check(state)
@@ -229,7 +244,7 @@ defmodule TelemetryMetricsCloudwatch do
     end
   end
 
-  defp push(%Cache{namespace: namespace, dry_run: dry_run} = state) do
+  defp push(%Cache{namespace: namespace, dry_run: dry_run, client: client} = state) do
     {state, metric_data} = Cache.pop_metrics(state)
 
     if dry_run do
@@ -237,14 +252,18 @@ defmodule TelemetryMetricsCloudwatch do
         "#{__MODULE__} [DRY RUN] would push #{length(metric_data)} metrics to cloudwatch in namespace #{namespace}"
       )
     else
-      Cloudwatch.send_metrics(metric_data, namespace)
+      client.send_metrics(metric_data, namespace)
     end
 
     Map.put(state, :last_run, System.monotonic_time(:second))
   end
 
   @impl true
-  def terminate(_, %Cache{metric_names: events, namespace: namespace, dry_run: dry_run} = state) do
+  def terminate(
+        _,
+        %Cache{metric_names: events, namespace: namespace, dry_run: dry_run, client: client} =
+          state
+      ) do
     for event <- events do
       :telemetry.detach({__MODULE__, event, self()})
     end
@@ -258,7 +277,7 @@ defmodule TelemetryMetricsCloudwatch do
           Logger.debug("#{__MODULE__} [DRY RUN] would flush #{length(metric_data)} metrics")
         else
           Logger.debug("#{__MODULE__} flushing metrics")
-          Cloudwatch.send_metrics(metric_data, namespace)
+          client.send_metrics(metric_data, namespace)
         end
 
         :ok

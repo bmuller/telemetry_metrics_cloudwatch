@@ -12,6 +12,7 @@ defmodule TelemetryMetricsCloudwatch.Cache do
     :sample_rate,
     :scale_counters,
     :dry_run,
+    :client,
     counters: %{},
     sums: %{},
     last_values: %{},

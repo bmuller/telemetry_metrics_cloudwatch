@@ -64,10 +64,13 @@ defmodule TelemetryMetricsCloudwatch.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_aws_cloudwatch, "~> 2.0"},
+      {:aws_credentials, "~> 1.0", optional: true},
+      {:ex_aws_cloudwatch, "~> 2.0", optional: true},
       {:ex_doc, "~> 0.28", only: :dev},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
+      {:plug, "~> 1.18", only: :test},
+      {:req, "~> 0.7.2", optional: true},
       {:telemetry_metrics, "~> 1.0"}
     ]
   end
